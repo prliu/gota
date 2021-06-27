@@ -56,7 +56,7 @@ func ExampleLoadRecords_options() {
 		},
 		dataframe.DetectTypes(false),
 		dataframe.DefaultType(series.Float),
-		dataframe.WithTypes(map[string]series.Type{
+		dataframe.WithTypes(map[string]series.ElementType{
 			"A": series.String,
 			"D": series.Bool,
 		}),

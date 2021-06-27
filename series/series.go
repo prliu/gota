@@ -17,44 +17,16 @@ import (
 // elements. Most of the power of Series resides on the ability to compare and
 // subset Series of different types.
 type Series struct {
-	Name     string   // The name of the series
-	elements Elements // The values of the elements
-	t        Type     // The type of the series
-	Err      error    // If there are errors they are stored here
+	Name     string      // The name of the series
+	elements []Element   // The values of the elements
+	t        ElementType // The type of the series
+	Err      error       // If there are errors they are stored here
 }
 
-// Elements is the interface that represents the array of elements contained on
-// a Series.
+// Deprecated: Elements will become an internal interface. Elements is the interface that represents the array of elements contained on a Series.
 type Elements interface {
 	Elem(int) Element
 	Len() int
-}
-
-// Element is the interface that defines the types of methods to be present for
-// elements of a Series
-type Element interface {
-	// Setter method
-	Set(interface{})
-
-	// Comparation methods
-	Eq(Element) bool
-	Neq(Element) bool
-	Less(Element) bool
-	LessEq(Element) bool
-	Greater(Element) bool
-	GreaterEq(Element) bool
-
-	// Accessor/conversion methods
-	Copy() Element     // FIXME: Returning interface is a recipe for pain
-	Val() ElementValue // FIXME: Returning interface is a recipe for pain
-	String() string
-	Int() (int, error)
-	Float() float64
-	Bool() (bool, error)
-
-	// Information methods
-	IsNA() bool
-	Type() Type
 }
 
 // intElements is the concrete implementation of Elements for Int elements.
@@ -81,10 +53,6 @@ type boolElements []boolElement
 func (e boolElements) Len() int           { return len(e) }
 func (e boolElements) Elem(i int) Element { return &e[i] }
 
-// ElementValue represents the value that can be used for marshaling or
-// unmarshaling Elements.
-type ElementValue interface{}
-
 type MapFunction func(Element) Element
 
 // Comparator is a convenience alias that can be used for a more type safe way of
@@ -106,16 +74,12 @@ const (
 // compFunc defines a user-defined comparator function. Used internally for type assertions
 type compFunc = func(el Element) bool
 
-// Type is a convenience alias that can be used for a more type safe way of
-// reason and use Series types.
-type Type string
-
 // Supported Series Types
 const (
-	String Type = "string"
-	Int    Type = "int"
-	Float  Type = "float"
-	Bool   Type = "bool"
+	String ElementType = "string"
+	Int    ElementType = "int"
+	Float  ElementType = "float"
+	Bool   ElementType = "bool"
 )
 
 // Indexes represent the elements that can be used for selecting a subset of
@@ -129,7 +93,7 @@ const (
 type Indexes interface{}
 
 // New is the generic Series constructor
-func New(values interface{}, t Type, name string) Series {
+func New(values interface{}, t ElementType, name string) Series {
 	ret := Series{
 		Name: name,
 		t:    t,
@@ -551,7 +515,7 @@ func (s Series) Bool() ([]bool, error) {
 }
 
 // Type returns the type of a given series
-func (s Series) Type() Type {
+func (s Series) Type() ElementType {
 	return s.t
 }
 
@@ -586,8 +550,7 @@ func (s Series) Val(i int) interface{} {
 	return s.elements.Elem(i).Val()
 }
 
-// Elem returns the element of a series for the given index. Will panic if the
-// index is out of bounds.
+// Deprecated: use Get instead; Elem returns the element of a series for the given index. Will panic if the index is out of bounds.
 func (s Series) Elem(i int) Element {
 	return s.elements.Elem(i)
 }
@@ -718,13 +681,13 @@ func (s Series) Max() float64 {
 		return math.NaN()
 	}
 
-	max := s.elements.Elem(0)
-	for i := 1; i < s.elements.Len(); i++ {
-		elem := s.elements.Elem(i)
-		if elem.Greater(max) {
-			max = elem
+	max := s.Fold(s.Get(0), func(e1, e2 Element) Element {
+		if e1.Greater(e2) {
+			return e1
+		} else {
+			return e2
 		}
-	}
+	})
 	return max.Float()
 }
 
@@ -750,13 +713,13 @@ func (s Series) Min() float64 {
 		return math.NaN()
 	}
 
-	min := s.elements.Elem(0)
-	for i := 1; i < s.elements.Len(); i++ {
-		elem := s.elements.Elem(i)
-		if elem.Less(min) {
-			min = elem
+	min := s.Fold(s.Get(0), func(e1, e2 Element) Element {
+		if e1.Less(e2) {
+			return e1
+		} else {
+			return e2
 		}
-	}
+	})
 	return min.Float()
 }
 
@@ -817,4 +780,53 @@ func (s Series) Sum() float64 {
 		sum += elem
 	}
 	return sum
+}
+
+func (s *Series) Apply(f func(Element) Element) Series {
+	s2 := make([]Element, s.Len())
+	for i := 0; i < s.Len(); i++ {
+		s2[i] = f(s.Get(i))
+	}
+	return New(s2, s.Type(), s.Name)
+}
+
+func (s *Series) Filter(f func(Element) bool) Series {
+	s2 := make([]Element, s.Len(), 0)
+	for i := 0; i < s.Len(); i++ {
+		e := s.Get(i)
+		if f(e) {
+			s2 = append(s2, e)
+		}
+	}
+	return New(s2, s.Type(), s.Name)
+}
+
+func (s *Series) FilterNot(f func(Element) bool) Series {
+	n := func(e Element) bool {
+		return !f(e)
+	}
+	return s.Filter(n)
+}
+
+func (s *Series) Fold(zero Element, f func(Element, Element) Element) Element {
+	buf := zero
+	for i := 0; i < s.Len(); i++ {
+		buf = f(buf, s.Get(i))
+	}
+	return buf
+}
+
+func (s *Series) ForAll(f func(Element) bool) bool {
+	b := true
+	for i := 0; b && i < s.Len(); i++ {
+		b = f(s.Get(i))
+	}
+	return b
+}
+
+func (s *Series) Get(idx int) Element {
+	if idx < 0 || idx >= s.Len() {
+		return nil
+	}
+	return s.Elem(idx)
 }

@@ -824,7 +824,7 @@ func (df DataFrame) Rapply(f func(series.Series) series.Series) DataFrame {
 		return df
 	}
 
-	detectType := func(types []series.Type) series.Type {
+	detectType := func(types []series.ElementType) series.ElementType {
 		var hasStrings, hasFloats, hasInts, hasBools bool
 		for _, t := range types {
 			switch t {
@@ -884,7 +884,7 @@ func (df DataFrame) Rapply(f func(series.Series) series.Series) DataFrame {
 	// Cast columns if necessary
 	columns := make([]series.Series, rowlen)
 	for j := 0; j < rowlen; j++ {
-		types := make([]series.Type, df.nrows)
+		types := make([]series.ElementType, df.nrows)
 		for i := 0; i < df.nrows; i++ {
 			types[i] = elements[i][j].Type()
 		}
@@ -921,7 +921,7 @@ type LoadOption func(*loadOptions)
 
 type loadOptions struct {
 	// Specifies which is the default type in case detectTypes is disabled.
-	defaultType series.Type
+	defaultType series.ElementType
 
 	// If set, the type of each column will be automatically detected unless
 	// otherwise specified.
@@ -944,11 +944,11 @@ type loadOptions struct {
 	comment rune
 
 	// The types of specific columns can be specified via column name.
-	types map[string]series.Type
+	types map[string]series.ElementType
 }
 
 // DefaultType sets the defaultType option for loadOptions.
-func DefaultType(t series.Type) LoadOption {
+func DefaultType(t series.ElementType) LoadOption {
 	return func(c *loadOptions) {
 		c.defaultType = t
 	}
@@ -983,7 +983,7 @@ func NaNValues(nanValues []string) LoadOption {
 }
 
 // WithTypes sets the types option for loadOptions.
-func WithTypes(coltypes map[string]series.Type) LoadOption {
+func WithTypes(coltypes map[string]series.ElementType) LoadOption {
 	return func(c *loadOptions) {
 		c.types = coltypes
 	}
@@ -1096,7 +1096,7 @@ func LoadStructs(i interface{}, options ...LoadOption) DataFrame {
 			}
 
 			// Handle `types` option
-			var t series.Type
+			var t series.ElementType
 			if cfgtype, ok := cfg.types[fieldName]; ok {
 				t = cfgtype
 			} else {
@@ -1140,7 +1140,7 @@ func LoadStructs(i interface{}, options ...LoadOption) DataFrame {
 		"load: type %s (%s) is not supported, must be []struct", tpy.Name(), tpy.Kind())}
 }
 
-func parseType(s string) (series.Type, error) {
+func parseType(s string) (series.ElementType, error) {
 	switch s {
 	case "float", "float64", "float32":
 		return series.Float, nil
@@ -1192,7 +1192,7 @@ func LoadRecords(records [][]string, options ...LoadOption) DataFrame {
 		headers = cfg.names
 	}
 
-	types := make([]series.Type, len(headers))
+	types := make([]series.ElementType, len(headers))
 	rawcols := make([][]string, len(headers))
 	for i, colname := range headers {
 		rawcol := make([]string, len(records))
@@ -1534,8 +1534,8 @@ func (df DataFrame) Names() []string {
 }
 
 // Types returns the types of the columns on a DataFrame.
-func (df DataFrame) Types() []series.Type {
-	coltypes := make([]series.Type, df.ncols)
+func (df DataFrame) Types() []series.ElementType {
+	coltypes := make([]series.ElementType, df.ncols)
 	for i, s := range df.columns {
 		coltypes[i] = s.Type()
 	}
@@ -2208,7 +2208,7 @@ func parseSelectIndexes(l int, indexes SelectIndexes, colnames []string) ([]int,
 	return idx, nil
 }
 
-func findType(arr []string) (series.Type, error) {
+func findType(arr []string) (series.ElementType, error) {
 	var hasFloats, hasInts, hasBools, hasStrings bool
 	for _, str := range arr {
 		if str == "" || str == "NaN" {

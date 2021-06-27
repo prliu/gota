@@ -11,6 +11,7 @@ type boolElement struct {
 	nan bool
 }
 
+// Deprecated: Set is not neccessary as an Element will become immutable
 func (e *boolElement) Set(value interface{}) {
 	e.nan = false
 	switch value.(type) {
@@ -64,6 +65,7 @@ func (e *boolElement) Set(value interface{}) {
 	return
 }
 
+// Deprecated: Copy is not neccassary as an Element will become immutable
 func (e boolElement) Copy() Element {
 	if e.IsNA() {
 		return &boolElement{false, true}
@@ -78,7 +80,7 @@ func (e boolElement) IsNA() bool {
 	return false
 }
 
-func (e boolElement) Type() Type {
+func (e boolElement) Type() ElementType {
 	return Bool
 }
 

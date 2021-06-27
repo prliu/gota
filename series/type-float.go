@@ -11,6 +11,7 @@ type floatElement struct {
 	nan bool
 }
 
+// Deprecated: Set is not neccessary as an Element will become immutable
 func (e *floatElement) Set(value interface{}) {
 	e.nan = false
 	switch value.(type) {
@@ -45,6 +46,7 @@ func (e *floatElement) Set(value interface{}) {
 	return
 }
 
+// Deprecated: Copy is not neccassary as an Element will become immutable
 func (e floatElement) Copy() Element {
 	if e.IsNA() {
 		return &floatElement{0.0, true}
@@ -59,7 +61,7 @@ func (e floatElement) IsNA() bool {
 	return false
 }
 
-func (e floatElement) Type() Type {
+func (e floatElement) Type() ElementType {
 	return Float
 }
 

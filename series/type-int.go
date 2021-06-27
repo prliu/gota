@@ -11,6 +11,7 @@ type intElement struct {
 	nan bool
 }
 
+// Deprecated: Set is not neccessary as an Element will become immutable
 func (e *intElement) Set(value interface{}) {
 	e.nan = false
 	switch value.(type) {
@@ -57,6 +58,7 @@ func (e *intElement) Set(value interface{}) {
 	return
 }
 
+// Deprecated: Copy is not neccassary as an Element will become immutable
 func (e intElement) Copy() Element {
 	if e.IsNA() {
 		return &intElement{0, true}
@@ -71,7 +73,7 @@ func (e intElement) IsNA() bool {
 	return false
 }
 
-func (e intElement) Type() Type {
+func (e intElement) Type() ElementType {
 	return Int
 }
 
@@ -124,6 +126,9 @@ func (e intElement) Eq(elem Element) bool {
 	return e.e == i
 }
 
+func (e intElement) Ne(elem Element) bool { return !e.Eq(elem) }
+
+// Deprecated: use Ne instead
 func (e intElement) Neq(elem Element) bool {
 	i, err := elem.Int()
 	if err != nil || e.IsNA() {
@@ -132,6 +137,10 @@ func (e intElement) Neq(elem Element) bool {
 	return e.e != i
 }
 
+func (e intElement) Lt(elem Element) bool {
+}
+
+// Deprecated: use Lt instead
 func (e intElement) Less(elem Element) bool {
 	i, err := elem.Int()
 	if err != nil || e.IsNA() {

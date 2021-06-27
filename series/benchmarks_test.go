@@ -53,7 +53,7 @@ func BenchmarkSeries_New(b *testing.B) {
 	table := []struct {
 		name       string
 		data       interface{}
-		seriesType series.Type
+		seriesType series.ElementType
 	}{
 		{
 			"[]bool(100000)_Int",

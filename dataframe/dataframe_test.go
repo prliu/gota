@@ -1005,7 +1005,7 @@ func TestLoadRecords(t *testing.T) {
 				HasHeader(true),
 				DetectTypes(false),
 				DefaultType(series.String),
-				WithTypes(map[string]series.Type{
+				WithTypes(map[string]series.ElementType{
 					"B": series.Float,
 					"C": series.String,
 				}),
@@ -1028,7 +1028,7 @@ func TestLoadRecords(t *testing.T) {
 				HasHeader(true),
 				DetectTypes(true),
 				DefaultType(series.String),
-				WithTypes(map[string]series.Type{
+				WithTypes(map[string]series.ElementType{
 					"B": series.Float,
 				}),
 			),
@@ -1337,7 +1337,7 @@ func TestLoadMaps(t *testing.T) {
 				HasHeader(true),
 				DetectTypes(false),
 				DefaultType(series.String),
-				WithTypes(map[string]series.Type{
+				WithTypes(map[string]series.ElementType{
 					"B": series.Float,
 					"C": series.String,
 				}),
@@ -1368,7 +1368,7 @@ func TestLoadMaps(t *testing.T) {
 				HasHeader(true),
 				DetectTypes(true),
 				DefaultType(series.String),
-				WithTypes(map[string]series.Type{
+				WithTypes(map[string]series.ElementType{
 					"B": series.Float,
 				}),
 			),
@@ -1921,7 +1921,7 @@ A_0,B,C,D_0,A_1,F,D_1
 `
 	expected := ReadCSV(
 		strings.NewReader(expectedCSV),
-		WithTypes(map[string]series.Type{
+		WithTypes(map[string]series.ElementType{
 			"A.1": series.String,
 		}))
 	if err := c.Err; err != nil {
@@ -2742,7 +2742,7 @@ func TestLoadStructs(t *testing.T) {
 				HasHeader(true),
 				DetectTypes(false),
 				DefaultType(series.String),
-				WithTypes(map[string]series.Type{
+				WithTypes(map[string]series.ElementType{
 					"B": series.Float,
 					"C": series.String,
 				}),
@@ -2760,7 +2760,7 @@ func TestLoadStructs(t *testing.T) {
 				HasHeader(true),
 				DetectTypes(true),
 				DefaultType(series.String),
-				WithTypes(map[string]series.Type{
+				WithTypes(map[string]series.ElementType{
 					"B": series.Float,
 				}),
 			),

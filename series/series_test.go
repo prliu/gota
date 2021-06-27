@@ -26,7 +26,7 @@ import (
 // Check that all the types on a Series are the same type and that it matches with
 // Series.t
 func checkTypes(s Series) error {
-	var types []Type
+	var types []ElementType
 	for i := 0; i < s.Len(); i++ {
 		e := s.elements.Elem(i)
 		types = append(types, e.Type())

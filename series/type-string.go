@@ -12,6 +12,7 @@ type stringElement struct {
 	nan bool
 }
 
+// Deprecated: Set is not neccessary as an Element will become immutable
 func (e *stringElement) Set(value interface{}) {
 	e.nan = false
 	switch value.(type) {
@@ -41,6 +42,7 @@ func (e *stringElement) Set(value interface{}) {
 	return
 }
 
+// Deprecated: Copy is not neccassary as an Element will become immutable
 func (e stringElement) Copy() Element {
 	if e.IsNA() {
 		return &stringElement{"", true}
@@ -55,7 +57,7 @@ func (e stringElement) IsNA() bool {
 	return false
 }
 
-func (e stringElement) Type() Type {
+func (e stringElement) Type() ElementType {
 	return String
 }
 
